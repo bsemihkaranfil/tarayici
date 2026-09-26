@@ -128,7 +128,7 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
   'use strict';
 
   /* ---------- Ayarlar ---------- */
-  var VERSION = '2.3';
+  var VERSION = '2.4';
   var ENG = {
     yandex: { n: 'Yandex', q: 'https://yandex.com.tr/search/touch/?text=' },
     google: { n: 'Google', q: 'https://www.google.com/search?q=' },
@@ -1015,7 +1015,9 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     b.dataset.c = c;
     b.dataset.h = h;
   }
+  var qLen = 0;
   function updGo() {
+    qLen = q.value.length;
     var t = cur().v === 'home' ? parse(q.value) : null;
     if (!t) { goB.hidden = goB2.hidden = true; return; }
     goB.hidden = false;
@@ -1077,13 +1079,24 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
       return;
     }
     var inApp = t.q && ((prefs.sr !== 'site') !== !!alt);
+    // Dönüşte odak adres çubuğunda olsun (Ara/Git satırları o zaman görünmez).
+    fmem.home = 0; ssave('f', fmem);
     if (t.q) {
       if (inApp) { clearQ(); openSearch(t.q); }
       else go(t);
     } else if (alt) { clearQ(); openReader(t.u); }
     else go(t);
   }
-  q.addEventListener('input', function () { if (!q.value) pre = ''; updGo(); });
+  // Telefonun yazı ekranı metni tek seferde teslim eder: o zaman odağı "Ara/Git" satırına
+  // taşı, kullanıcı tek OK ile devam etsin. Harf harf yazarken (bilgisayar klavyesi) taşıma.
+  q.addEventListener('input', function () {
+    var jump = q.value.length - qLen > 1;
+    if (!q.value) pre = '';
+    updGo();
+    if (jump) setTimeout(function () {
+      if (document.activeElement === q && !goB.hidden && cur().v === 'home' && !going) focusEl(goB);
+    }, 60);
+  });
   // Klavye/IME onayında git; odak başka yere geçtiği için oluşan change'de gitme.
   q.addEventListener('change', function () {
     updGo();
