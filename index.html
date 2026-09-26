@@ -128,7 +128,7 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
   'use strict';
 
   /* ---------- Ayarlar ---------- */
-  var VERSION = '2.1';
+  var VERSION = '2.2';
   var ENG = {
     yandex: { n: 'Yandex', q: 'https://yandex.com.tr/search/touch/?text=' },
     google: { n: 'Google', q: 'https://www.google.com/search?q=' },
@@ -723,8 +723,11 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     if (best >= 0) return best;
     if (firstH1 >= 0 && (firstLong < 0 || firstH1 < firstLong)) return firstH1;
     if (firstLong >= 0) {
-      for (i = firstLong - 1; i >= Math.max(0, firstLong - 2); i--) if (els[i]._k === 'h') return i;
-      return firstLong;
+      // Kısa bir giriş paragrafı (spot) uzun paragrafın hemen üstündeyse oradan başla.
+      var st = firstLong;
+      while (st > 0 && firstLong - st < 3 && !els[st - 1]._u && els[st - 1]._k === 'p' && els[st - 1]._len >= 60) st--;
+      for (i = st - 1; i >= Math.max(0, st - 2); i--) if (els[i]._k === 'h') return i;
+      return st;
     }
     return 0;
   }
