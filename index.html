@@ -33,9 +33,9 @@ header{flex:0 0 var(--hh); height:var(--hh); background:var(--hd); color:#fff;
   font-weight:700; display:flex; align-items:center; padding:0 var(--m)}
 #hw{flex:1; overflow:hidden; white-space:nowrap}
 #ht{display:inline-block; white-space:nowrap}
-header.mq #ht{animation:mq 7s linear infinite}
+header.mq #ht{animation:mq 8s linear infinite}
 header.msg{background:#1e7a45}
-@keyframes mq{0%,15%{transform:translateX(0)} 100%{transform:translateX(-105%)}}
+@keyframes mq{0%,18%{transform:translateX(0)} 82%,100%{transform:translateX(var(--mq,-50%))}}
 
 /* İçerik */
 main{flex:1 1 auto; overflow-y:auto; overflow-x:hidden; padding:2px 0 4px}
@@ -128,7 +128,7 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
   'use strict';
 
   /* ---------- Ayarlar ---------- */
-  var VERSION = '2.2';
+  var VERSION = '2.3';
   var ENG = {
     yandex: { n: 'Yandex', q: 'https://yandex.com.tr/search/touch/?text=' },
     google: { n: 'Google', q: 'https://www.google.com/search?q=' },
@@ -685,7 +685,7 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     });
   }
   function renderBlock(b, out) {
-    var isList = b.k === 'p' || b.k === 'li' || b.k === 'h';
+    var isList = b.k === 'p' || b.k === 'li' || b.k === 'h' || b.k === 'tr';
     if (isList && b.links.length) {
       var lt = norm(b.links.map(function (l) { return l.s; }).join(''));
       if (lt && lt === norm(b.plain)) {
@@ -936,8 +936,12 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     if (ht.textContent === t) return;
     ht.textContent = t;
     hd.classList.remove('mq');
-    if (ht.scrollWidth > hw.clientWidth) {
-      ht.style.animationDuration = Math.max(6, Math.min(40, t.length * 0.16)) + 's';
+    var over = ht.scrollWidth - hw.clientWidth;
+    if (over > 0) {
+      ht.style.setProperty('--mq', -(over + 2) + 'px');
+      // ~20 px/sn kaydırma; baştaki ve sondaki beklemeler dahil.
+      ht.style.animationDuration = Math.max(4, Math.min(40, over / 20 / 0.64)).toFixed(1) + 's';
+      void ht.offsetWidth;
       hd.classList.add('mq');
     }
   }
