@@ -66,12 +66,12 @@ form.add #q:focus{border:2px solid #2ecc71}
 .txt{padding:2px var(--m); outline:none; font-size:.9em}
 .txt:focus{background:#1a2a44}
 .txt b{color:#fff}
-.empty,.note{padding:.5em var(--m); color:var(--dim)}
+.empty,.note{padding:.5em var(--m); color:var(--dim); overflow-wrap:anywhere}
 .cf{padding:3px var(--m)}
-#ct{display:block; width:100%; height:1.7em; font:inherit; color:var(--fg);
+#ct,#ca{display:block; width:100%; height:1.7em; font:inherit; color:var(--fg);
   background:#1a1a1a; border:1px solid #555; border-radius:3px; padding:0 .3em; outline:none}
-#ct::placeholder{color:#8a8a8a}
-#ct:focus{background:#fff; color:#000; border:2px solid var(--acc)}
+#ct::placeholder,#ca::placeholder{color:#8a8a8a}
+#ct:focus,#ca:focus{background:#fff; color:#000; border:2px solid var(--acc)}
 .rd.cv{font-size:1.05em; color:#fff; padding-top:4px}
 
 /* Okuyucu */
@@ -134,7 +134,7 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
   'use strict';
 
   /* ---------- Ayarlar ---------- */
-  var VERSION = '2.6';
+  var VERSION = '2.7';
   var ENG = {
     yandex: { n: 'Yandex', q: 'https://yandex.com.tr/search/touch/?text=' },
     google: { n: 'Google', q: 'https://www.google.com/search?q=' },
@@ -157,7 +157,7 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     { n: 'GS Sözlük', u: 'https://rerererarara.net/', r: 1 }
   ];
   var TITLES = { home: 'Tarayıcı', hist: 'Geçmiş', eng: 'Arama motoru', help: 'Yardım',
-                 read: 'Okuyucu', srch: 'Arama', saved: 'Okuma listesi', ceviri: 'Çeviri' };
+                 read: 'Okuyucu', srch: 'Arama', saved: 'Okuma listesi', ceviri: 'Çeviri', ara: 'Arama' };
   var PAL = ['#c0392b', '#d35400', '#9a7d0a', '#1e8449', '#117a65', '#2471a3',
              '#7d3c98', '#a93226', '#1f618d', '#6e2c00'];
   var HIST_MAX = 40, SAVED_MAX = 60, MAX_BLOCKS = 1500, MAX_CHARS = 150000;
@@ -276,12 +276,39 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     try {
       var x = new URL(u, base);
       if (!/^https?:$/.test(x.protocol)) return null;
+      if (/\.translate\.goog$/.test(x.hostname)) return resolveUrl(unGoog(x));
       if (/(^|\.)duckduckgo\.com$/.test(x.hostname) && /^\/l\/?$/.test(x.pathname)) {
         var t = x.searchParams.get('uddg');
         return t ? resolveUrl(t) : null;
       }
       return x.href;
     } catch (e) { return null; }
+  }
+  // Google Çeviri vekili: site.com -> site-com.translate.goog. Okuyucu bir siteye
+  // erişemeyince bu yoldan dener; sayfa Türkçeye çevrilmiş gelir.
+  var GOOG = '.translate.goog', GOOG_KEYS = ['_x_tr_sl', '_x_tr_tl', '_x_tr_hl', '_x_tr_pto', '_x_tr_hist', '_x_tr_sch'];
+  function unGoog(x) {
+    var h = x.hostname.slice(0, -GOOG.length).replace(/--/g, '\u0001').replace(/-/g, '.').replace(/\u0001/g, '-');
+    GOOG_KEYS.forEach(function (k) { x.searchParams.delete(k); });
+    return 'https://' + h + x.pathname + x.search + x.hash;
+  }
+  function googProxy(u) {
+    var x = new URL(u);
+    var p = new URL('https://' + x.hostname.replace(/-/g, '--').replace(/\./g, '-') + GOOG + x.pathname + x.search);
+    p.searchParams.set('_x_tr_sl', 'auto');
+    p.searchParams.set('_x_tr_tl', 'tr');
+    p.searchParams.set('_x_tr_hl', 'tr');
+    p.searchParams.set('_x_tr_pto', 'wapp');
+    return p.href;
+  }
+  // Bazı sitelerde yalnız ana içerik alanını iste (daha kısa, daha hızlı).
+  function siteHeaders(u) {
+    try {
+      var x = new URL(u), h = x.hostname.replace(/^www\./, '');
+      if (h === 'apnews.com') return { 'X-Target-Selector': 'main' };
+      if (/^yandex\.(com\.tr|com|ru)$/.test(h) && /^\/search\//.test(x.pathname)) return { 'X-Target-Selector': '#search-result' };
+    } catch (e) {}
+    return null;
   }
   // "[metin](adres "başlık")" — iç içe köşeli ve normal parantezlere dayanıklı.
   function matchLink(s, i) {
@@ -418,22 +445,46 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     return res.slice(0, 20);
   }
 
+  /* ---------- Yandex sonuçlarını ayrıştır ---------- */
+  // Her sonuç tek satır: "*   [](adres)   Site  alan › yol   ## [Başlık](adres) özet…"
+  function parseYandex(md) {
+    var res = [], seen = {};
+    String(md).replace(/\r/g, '').split('\n').forEach(function (line) {
+      var k = line.indexOf('## [');
+      if (k < 0) return;
+      var lk = matchLink(line, k + 3);
+      if (!lk) return;
+      var u = resolveUrl(lk.url, 'https://yandex.com.tr/');
+      if (!u || seen[u]) return;
+      var h = hostOf(u);
+      if (/(^|\.)yandex\.(com\.tr|com|ru|net)$/.test(h) || /(^|\.)yabs\./.test(h)) return;
+      seen[u] = 1;
+      res.push({ n: inlineText(lk.text) || h, u: u, s: inlineText(line.slice(lk.end)).slice(0, 300) });
+    });
+    return res.slice(0, 20);
+  }
+
   /* ---------- Okuyucu servisi ---------- */
-  function fetchReader(u) {
+  function jinaGet(target, extra) {
     return new Promise(function (resolve, reject) {
       var ctl = typeof AbortController === 'function' ? new AbortController() : null;
       var to = setTimeout(function () { if (ctl) ctl.abort(); reject({ k: 'timeout' }); }, 30000);
-      fetch(READER + u, {
-        headers: { 'Accept': 'application/json', 'X-Retain-Images': 'none' },
-        signal: ctl ? ctl.signal : undefined
-      }).then(function (r) {
-        if (r.status === 429) throw { k: 'rate' };
-        return r.json().catch(function () { throw { k: 'fail', st: r.status }; }).then(function (j) {
-          var d = j && j.data;
-          if (!r.ok || !d) throw { k: 'fail', st: r.status };
-          if (d.httpStatus && d.httpStatus >= 400) throw { k: 'http', st: d.httpStatus };
+      var h = { 'Accept': 'application/json', 'X-Retain-Images': 'none' };
+      if (extra) for (var k in extra) h[k] = extra[k];
+      fetch(READER + target, { headers: h, signal: ctl ? ctl.signal : undefined }).then(function (r) {
+        return r.json().catch(function () { return null; }).then(function (j) {
           clearTimeout(to);
-          resolve({ t: String(d.title || '').trim(), c: String(d.content || '').slice(0, MAX_CHARS), u: resolveUrl(String(d.url || u)) || u });
+          var d = j && j.data, msg = String((j && (j.message || j.readableMessage)) || '');
+          if (/Anonymous access to domain|blocked until|DDoS/i.test(msg)) throw { k: 'blocked' };
+          if (r.status === 429) throw { k: 'rate' };
+          if (r.status === 403 || r.status === 451) throw { k: 'blocked' };
+          if (!r.ok || !d) throw { k: 'fail', st: r.status };
+          var title = String(d.title || '').trim(), c = String(d.content || '');
+          if (/^just a moment/i.test(title) ||
+              /unusual traffic from your computer network|Enable JavaScript and cookies to continue/i.test(c.slice(0, 3000))) throw { k: 'blocked' };
+          if (d.httpStatus === 403 || d.httpStatus === 429 || d.httpStatus === 503) throw { k: 'blocked', st: d.httpStatus };
+          if (d.httpStatus && d.httpStatus >= 400) throw { k: 'http', st: d.httpStatus };
+          resolve({ t: title, c: c.slice(0, MAX_CHARS), u: String(d.url || target) });
         });
       }).catch(function (e) {
         clearTimeout(to);
@@ -441,12 +492,35 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
       });
     });
   }
+  // Önce siteye doğrudan, olmazsa çeviri vekili üzerinden dene (tr modunda tersi).
+  function fetchReader(u, opt) {
+    opt = opt || {};
+    var ex = siteHeaders(u), prox = null, last = null;
+    try { prox = googProxy(u); } catch (e) {}
+    var tries = (opt.tr ? [prox, u] : [u, prox]).filter(Boolean);
+    if (opt.direct) tries = [u];
+    function step(i) {
+      if (i >= tries.length) return Promise.reject(last || { k: 'fail' });
+      return jinaGet(tries[i], ex).then(function (r) {
+        r.via = tries[i] === prox ? 'tr' : 'direct';
+        r.u = resolveUrl(r.u) || u;
+        return r;
+      }, function (e) {
+        if (!last || e.k === 'blocked') last = e;
+        // Yedek yol yalnız erişim engelinde ya da okuyucu hatasında denenir (404 gibi gerçek hatalarda değil).
+        if (e.k !== 'blocked' && e.k !== 'fail') return Promise.reject(e);
+        return step(i + 1);
+      });
+    }
+    return step(0);
+  }
   function errText(e) {
     switch (e && e.k) {
       case 'rate': return 'Okuyucu şu an çok yoğun. Bir dakika sonra tekrar dene.';
       case 'timeout': return 'Sayfa zamanında yüklenmedi.';
       case 'http': return 'Site bu sayfayı vermedi (hata ' + e.st + ').';
       case 'net': return 'Bağlantı kurulamadı.';
+      case 'blocked': return 'Bu site okuyucuya erişim vermiyor. Tam sayfayı açabilirsin.';
       default: return 'Bu sayfa okuyucuda açılamadı.';
     }
   }
@@ -467,15 +541,16 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
   var lastKeyTs = 0;
   function urlOf(st) {
     if (!st || st.v === 'home') return base;
-    if (st.v === 'read') return base + '#read:' + encodeURIComponent(st.u || '') + (st.s ? ':' + encodeURIComponent(st.s) : '');
-    if (st.v === 'srch') return base + '#srch:' + encodeURIComponent(st.q || '');
+    if (st.v === 'read') return base + (st.tr ? '#readtr:' : '#read:') + encodeURIComponent(st.u || '') + (st.s ? ':' + encodeURIComponent(st.s) : '');
+    if (st.v === 'srch') return base + '#srch:' + (st.e ? st.e + ':' : '') + encodeURIComponent(st.q || '');
+    if (st.v === 'ara') return base + '#ara:' + (st.e || '');
     return base + '#' + st.v;
   }
   function cur() {
     var s = history.state;
     return (s && TITLES[s.v]) ? s : { v: 'home', m: 0, d: 0 };
   }
-  function keyOf(s) { return s.v + '|' + (s.u || s.q || ''); }
+  function keyOf(s) { return s.v + '|' + (s.tr ? 'tr|' : '') + (s.e ? s.e + '|' : '') + (s.u || s.q || ''); }
   function push(st) {
     var c = cur();
     st.hb = 1; st.d = (c.d || 0) + 1;
@@ -627,7 +702,8 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     } else if (v === 'help') {
       [
         '<b>Adres çubuğu:</b> OK’e bas, adres (bbc.com) ya da aranacak kelimeyi yaz, onayla.',
-        '<b>Arama:</b> sonuçlar uygulamanın içinde, ekrana sığacak şekilde gelir. İstersen hemen altındaki satırla arama motorunun kendi sayfasını açabilirsin.',
+        '<b>Arama:</b> sonuçlar uygulamanın içinde, ekrana sığacak şekilde gelir (Yandex; seçili motor DuckDuckGo ise o). İstersen hemen altındaki satırla arama motorunun kendi sayfasını açabilirsin.',
+        '<b>Türkçeye çevir:</b> okuyucu menüsünden sayfayı Türkçe okuyabilirsin. Bir site okuyucuya kapalıysa sayfa kendiliğinden çeviri yoluyla açılmayı dener.',
         '<b>Adres yazınca:</b> “Git” siteyi olduğu gibi açar, “Oku” sade metin olarak açar.',
         '<b>Okuyucu:</b> ok tuşlarıyla paragraf paragraf ilerlersin. Mavi altı çizili yazı bağlantıdır: paragrafın üstünde OK (ya da 5) bağlantıları listeler. 2 ve 8 sayfa sayfa kaydırır.',
         '<b>Okuyucu menüsü:</b> Tam sayfayı aç, Okuma listesine kaydet, Sayfadaki bağlantılar, Başa dön, Yenile, Ana ekran.',
@@ -644,9 +720,11 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
         ls.appendChild(p);
       });
     } else if (v === 'read') {
-      buildRead(s.u);
+      buildRead(s);
     } else if (v === 'srch') {
-      buildSrch(s.q);
+      buildSrch(s);
+    } else if (v === 'ara') {
+      buildAra(s);
     } else if (v === 'ceviri') {
       buildCev();
     }
@@ -664,19 +742,18 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
       p.textContent = label + ' ' + Math.round((Date.now() - t0) / 1000) + ' sn';
     }, 1000);
   }
-  function showError(e, u, qq) {
+  function showError(e, u, qq, ck) {
     clearInterval(loadTimer);
     ls.innerHTML = '';
     pageTitle = 'Açılamadı';
     ls.appendChild(mk('p', 'note', errText(e)));
     ls.appendChild(actRow(RETRY, 'Tekrar dene', function () {
-      if (u) delete RC[u];
-      if (qq) delete SC[qq];
+      if (ck) { delete RC[ck]; delete SC[ck]; }
       render(true);
     }, 'Seç'));
     if (u) ls.appendChild(actRow(OPEN, 'Tam sayfayı aç', function () { go({ n: hostOf(u), u: u }); }, 'Aç'));
     if (qq) {
-      var en = ENG[prefs.eng] || ENG.yandex;
+      var en = IN_ENG[inEng(cur().e)].site;
       ls.appendChild(actRow(OPEN, en.n + ' ile ara', function () {
         go({ n: 'Ara: ' + qq, u: en.q + encodeURIComponent(qq), q: qq, e: en.n });
       }, 'Aç'));
@@ -685,20 +762,22 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
   }
 
   var readSeq = 0;
-  function buildRead(u) {
-    var my = ++readSeq, key = 'read|' + u;
-    if (RC[u]) { fillRead(u, RC[u]); return; }
-    showLoading('Yükleniyor… ' + hostOf(u));
-    fetchReader(u).then(function (r) {
-      var val = { t: r.t, c: r.c, at: Date.now(), b: r.u };
-      cachePut(RC, u, 'rc', val, 8);
+  function rcKey(s) { return (s.tr ? 'tr|' : '') + s.u; }
+  function buildRead(s) {
+    var u = s.u, ck = rcKey(s), my = ++readSeq, key = keyOf(s);
+    if (RC[ck]) { fillRead(u, RC[ck]); return; }
+    showLoading((s.tr ? 'Çevriliyor… ' : 'Yükleniyor… ') + hostOf(u));
+    fetchReader(u, { tr: !!s.tr }).then(function (r) {
+      var val = { t: r.t, c: r.c, at: Date.now(), b: r.u, via: r.via };
+      cachePut(RC, ck, 'rc', val, 8);
       if (r.t) retitleHist(u, r.t);
       if (my !== readSeq || keyOf(cur()) !== key) return;
       fillRead(u, val);
+      if (r.via === 'tr' && !s.tr) toast('Çeviri yoluyla açıldı');
       onFocus();
     }, function (e) {
       if (my !== readSeq || keyOf(cur()) !== key) return;
-      showError(e, u, null);
+      showError(e, u, null, ck);
       onFocus();
     });
   }
@@ -729,7 +808,12 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
   }
   // Widget adresindeki işaret (#read:URL:başlık) varsa okumaya o başlıktan başla.
   function markStart(els, m) {
-    var nm = m ? norm(m) : '', i;
+    var nm = m ? norm(m) : '', i, hm = /^@h([1-6])$/.exec(m || '');
+    // "@h2": ilk (en fazla 2. düzey) başlıktan başla — başlıkları değişen haber siteleri için.
+    if (hm) {
+      for (i = 0; i < els.length; i++) if (els[i]._k === 'h' && els[i]._lv <= +hm[1]) return i;
+      return -1;
+    }
     if (!nm) return -1;
     for (i = 0; i < els.length; i++) if (els[i]._k === 'h' && norm(els[i].textContent || '').indexOf(nm) === 0) return i;
     for (i = 0; i < els.length; i++) if (norm(els[i].textContent || '') === nm) return i;
@@ -775,27 +859,48 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
   }
 
   var srchSeq = 0;
-  function curResults() { var c = SC[cur().q]; return c && Array.isArray(c.r) ? c.r : []; }
-  function buildSrch(qq) {
-    var my = ++srchSeq, key = 'srch|' + qq;
-    if (SC[qq] && Array.isArray(SC[qq].r)) { fillSrch(qq, SC[qq].r); return; }
-    showLoading('Aranıyor…');
-    fetchReader(ddgUrl(qq)).then(function (r) {
-      var res = parseDDG(r.c);
-      if (res.length) cachePut(SC, qq, 'sc', { r: res, at: Date.now() }, 10);
+  var IN_ENG = {
+    yandex: { n: 'Yandex', site: ENG.yandex, parse: parseYandex,
+              url: function (q) { return 'https://yandex.com.tr/search/touch/?text=' + encodeURIComponent(q); } },
+    ddg: { n: 'DuckDuckGo', site: ENG.ddg, parse: parseDDG, url: ddgUrl }
+  };
+  // Uygulama içi arama motoru: seçili motor DuckDuckGo ise o, değilse Yandex.
+  function inEng(e) { return IN_ENG[e] ? e : (prefs.eng === 'ddg' ? 'ddg' : 'yandex'); }
+  function scKey(s) { return inEng(s.e) + '|' + s.q; }
+  function curResults() { var c = SC[scKey(cur())]; return c && Array.isArray(c.r) ? c.r : []; }
+  // Yandex boş ya da engelli dönerse DuckDuckGo ile dener.
+  function runSearch(qq, e) {
+    var E = IN_ENG[e];
+    return fetchReader(E.url(qq)).then(function (r) {
+      var res = E.parse(r.c);
+      if (res.length || e === 'ddg') return { r: res, e: e };
+      throw { k: 'empty' };
+    }).catch(function (err) {
+      if (e === 'ddg') throw err;
+      return fetchReader(IN_ENG.ddg.url(qq)).then(function (r) { return { r: parseDDG(r.c), e: 'ddg' }; });
+    });
+  }
+  function buildSrch(s) {
+    var qq = s.q, e = inEng(s.e), sk = e + '|' + qq, my = ++srchSeq, key = keyOf(s);
+    if (SC[sk] && Array.isArray(SC[sk].r)) { fillSrch(s, SC[sk].r, SC[sk].e || e); return; }
+    showLoading(IN_ENG[e].n + ' aranıyor…');
+    runSearch(qq, e).then(function (o) {
+      if (o.r.length) cachePut(SC, sk, 'sc', { r: o.r, e: o.e, at: Date.now() }, 10);
       if (my !== srchSeq || keyOf(cur()) !== key) return;
-      fillSrch(qq, res);
+      fillSrch(s, o.r, o.e);
       onFocus();
-    }, function (e) {
+    }, function (err) {
       if (my !== srchSeq || keyOf(cur()) !== key) return;
-      showError(e, null, qq);
+      showError(err, null, qq, sk);
       onFocus();
     });
   }
-  function fillSrch(qq, res) {
+  function fillSrch(s, res, usedE) {
+    var qq = s.q, e = inEng(s.e);
     clearInterval(loadTimer);
     ls.innerHTML = '';
     pageTitle = 'Ara: ' + qq;
+    if (usedE && usedE !== e) ls.appendChild(mk('p', 'note', IN_ENG[e].n + ' yanıt vermedi; sonuçlar ' + IN_ENG[usedE].n + '’dan.'));
     if (!res.length) ls.appendChild(mk('p', 'note', 'Sonuç bulunamadı.'));
     res.forEach(function (r, i) {
       var b = mk('button', 'row res');
@@ -811,19 +916,58 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
       b.dataset.c = 'Oku';
       b.dataset.h = r.s || pretty(r.u);
       b.dataset.ri = i;
-      b.addEventListener('click', function (e) { e.preventDefault(); openReader(r.u, r.n); });
+      b.addEventListener('click', function (ev) { ev.preventDefault(); openReader(r.u, r.n); });
       ls.appendChild(b);
     });
     ls.appendChild(mk('div', 'sep'));
-    var en = ENG[prefs.eng] || ENG.yandex;
+    var en = IN_ENG[e].site;
     ls.appendChild(actRow(OPEN, en.n + ' sonuçlarını aç', function () {
       go({ n: 'Ara: ' + qq, u: en.q + encodeURIComponent(qq), q: qq, e: en.n });
     }, 'Aç'));
     restoreKeyed(false);
   }
+  // Tek işlevli arama widget'ı (#ara:yandex / #ara:ddg)
+  function buildAra(s) {
+    var e = inEng(s.e), E = IN_ENG[e];
+    pageTitle = E.n;
+    var f = mk('form', 'cf');
+    f.setAttribute('autocomplete', 'off');
+    f.setAttribute('novalidate', '');
+    var inp = document.createElement('input');
+    inp.id = 'ca';
+    inp.type = 'text';
+    inp.placeholder = 'Ara';
+    inp.setAttribute('autocapitalize', 'off');
+    inp.setAttribute('spellcheck', 'false');
+    inp.setAttribute('enterkeyhint', 'search');
+    inp.setAttribute('data-f', '');
+    inp.dataset.c = 'Yaz';
+    inp.dataset.h = E.n + ' ile ara';
+    f.appendChild(inp);
+    ls.appendChild(f);
+    function start() {
+      var v = inp.value.replace(/\s+/g, ' ').trim();
+      if (!v) return;
+      inp.value = '';
+      openSearch(v, e);
+    }
+    f.addEventListener('submit', function (ev) { ev.preventDefault(); start(); });
+    inp.addEventListener('input', function () {
+      if (Date.now() - lastKeyTs > 400 && inp.value.trim()) start();
+    });
+    var recent = hist.filter(function (h) { return h.m === 's' && h.q; }).slice(0, 9);
+    if (recent.length) {
+      ls.appendChild(mk('div', 'sep'));
+      recent.forEach(function (h) {
+        var b = actRow(CLOCK, h.q, function () { openSearch(h.q, e); }, 'Ara');
+        b.dataset.h = 'Son arama';
+        ls.appendChild(b);
+      });
+    }
+  }
 
   function hasMenu(v) {
-    return v === 'home' || v === 'read' || v === 'srch' || v === 'ceviri' ||
+    return v === 'home' || v === 'read' || v === 'srch' || v === 'ceviri' || v === 'ara' ||
       (v === 'hist' && hist.length > 0) || (v === 'saved' && saved.length > 0);
   }
 
@@ -1168,14 +1312,22 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     goTimer = setTimeout(resetGo, 15000);
   }
   function resetGo() { going = false; ov.hidden = true; clearTimeout(goTimer); }
-  function openReader(u, title) {
-    addHistEntry({ n: title || (RC[u] && RC[u].t) || hostOf(u), u: u, m: 'r' });
-    push({ v: 'read', u: u, m: 0 });
+  // tr verilmezse: çevrilmiş bir sayfadan açılan bağlantı da çevrilmiş açılır.
+  function openReader(u, title, tr) {
+    var c = cur();
+    if (tr === undefined) tr = !!(c.v === 'read' && c.tr);
+    var ck = (tr ? 'tr|' : '') + u;
+    var h = { n: title || (RC[ck] && RC[ck].t) || hostOf(u), u: u, m: 'r' };
+    var st = { v: 'read', u: u, m: 0 };
+    if (tr) { h.tr = 1; st.tr = 1; }
+    addHistEntry(h);
+    push(st);
     render();
   }
-  function openSearch(qq) {
-    addHistEntry({ n: 'Ara: ' + qq, u: ddgUrl(qq), q: qq, m: 's' });
-    push({ v: 'srch', q: qq, m: 0 });
+  function openSearch(qq, e) {
+    e = inEng(e);
+    addHistEntry({ n: 'Ara: ' + qq, u: IN_ENG[e].url(qq) + '#app', q: qq, m: 's', e: e });
+    push({ v: 'srch', q: qq, e: e, m: 0 });
     render();
   }
   function rememberSite(i) {
@@ -1194,8 +1346,8 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     var h = hist[i];
     if (!h) return;
     fmem.hist = i; ssave('f', fmem);
-    if (h.m === 's' && h.q) openSearch(h.q);
-    else if (h.m === 'r') openReader(h.u, h.n);
+    if (h.m === 's' && h.q) openSearch(h.q, h.e);
+    else if (h.m === 'r') openReader(h.u, h.n, !!h.tr);
     else go(h);
   }
 
@@ -1573,6 +1725,9 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
         var all = allLinks();
         if (all.length) it.push(['Sayfadaki bağlantılar (' + all.length + ')', function () { replaceMenu({ lp: -1 }); }]);
         it.push(['Tam sayfayı aç', function () { closeMenu(function () { go({ n: pageTitle || hostOf(u), u: u }); }); }]);
+        it.push([s.tr ? 'Orijinal dilde aç' : 'Türkçeye çevir', function () {
+          closeMenu(function () { openReader(u, null, !s.tr); });
+        }]);
         it.push([isSaved(u) ? 'Okuma listesinden çıkar' : 'Okuma listesine kaydet', function () {
           closeMenu(function () { toggleSaved(pageTitle, u); });
         }]);
@@ -1584,8 +1739,9 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
         }]);
         it.push(['Yenile', function () {
           closeMenu(function () {
-            delete RC[u]; ssave('rc', RC);
-            delete RM['read|' + u]; ssave('rm', RM);
+            var cs = cur();
+            delete RC[rcKey(cs)]; ssave('rc', RC);
+            delete RM[keyOf(cs)]; ssave('rm', RM);
             render(true);
           });
         }]);
@@ -1621,13 +1777,39 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
           closeMenu(function () { toggleSaved(r0.n, r0.u); });
         }]);
       }
-      var en = ENG[prefs.eng] || ENG.yandex, qq = s.q;
+      var en = IN_ENG[inEng(s.e)].site, qq = s.q;
       it.push([en.n + ' sonuçlarını aç', function () {
         closeMenu(function () { go({ n: 'Ara: ' + qq, u: en.q + encodeURIComponent(qq), q: qq, e: en.n }); });
       }]);
-      it.push(['Yeniden ara', function () {
-        closeMenu(function () { delete SC[qq]; ssave('sc', SC); delete RM['srch|' + qq]; render(true); });
+      var other = inEng(s.e) === 'ddg' ? 'yandex' : 'ddg';
+      it.push([IN_ENG[other].n + ' ile ara', function () {
+        closeMenu(function () { openSearch(qq, other); });
       }]);
+      it.push(['Yeniden ara', function () {
+        closeMenu(function () { var cs = cur(); delete SC[scKey(cs)]; ssave('sc', SC); delete RM[keyOf(cs)]; render(true); });
+      }]);
+      pushHome(it);
+    } else if (s.v === 'ara') {
+      var oe = inEng(s.e) === 'ddg' ? 'yandex' : 'ddg';
+      it.push(['Arama motoru: ' + IN_ENG[inEng(s.e)].n, function () {
+        closeMenu(function () {
+          var cs = cur(), st = {};
+          for (var k2 in cs) st[k2] = cs[k2];
+          st.e = oe;
+          history.replaceState(st, '', urlOf(st));
+          render(true);
+          toast('Arama: ' + IN_ENG[oe].n);
+        });
+      }]);
+      if (hist.some(function (h) { return h.m === 's'; })) {
+        it.push(['Son aramaları temizle', function () {
+          closeMenu(function () {
+            hist = hist.filter(function (h) { return h.m !== 's'; });
+            save('hist', hist);
+            render(true);
+          });
+        }]);
+      }
       pushHome(it);
     }
     return it;
@@ -1682,15 +1864,22 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     if (c > 0) {
       v = h.slice(0, c);
       var rest = h.slice(c + 1);
+      if (v === 'readtr') { v = 'read'; t.tr = 1; }
       if (v === 'read') {
         // #read:<kodlanmış adres>[:<başlangıç başlığı>]; kodlanmamış adres de kabul.
         var j = /^https?:/i.test(rest) ? -1 : rest.indexOf(':');
         t.u = resolveUrl(dec(j >= 0 ? rest.slice(0, j) : rest));
         if (j >= 0) { var mark = dec(rest.slice(j + 1)).trim(); if (mark) t.s = mark.slice(0, 80); }
         if (!t.u) v = 'home';
-      } else if (v === 'srch') { t.q = dec(rest).replace(/\s+/g, ' ').trim(); if (!t.q) v = 'home'; }
+      } else if (v === 'srch') {
+        var se = /^(yandex|ddg):/.exec(rest);
+        if (se) { t.e = se[1]; rest = rest.slice(se[0].length); }
+        t.q = dec(rest).replace(/\s+/g, ' ').trim();
+        if (!t.q) v = 'home';
+      } else if (v === 'ara') { t.e = IN_ENG[rest] ? rest : inEng(); }
       else v = 'home';
-    } else if (v === 'read' || v === 'srch') v = 'home';
+    } else if (v === 'ara') t.e = inEng();
+    else if (v === 'read' || v === 'srch') v = 'home';
     t.v = TITLES[v] ? v : 'home';
     return t;
   }
@@ -1737,7 +1926,7 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
     if (document.activeElement === document.body && !cur().m) restoreFocus();
   });
 
-  window.TB = { parse: parse, mdBlocks: mdBlocks, parseDDG: parseDDG, resolveUrl: resolveUrl, version: VERSION };
+  window.TB = { parse: parse, mdBlocks: mdBlocks, parseDDG: parseDDG, parseYandex: parseYandex, resolveUrl: resolveUrl, googProxy: googProxy, version: VERSION };
 })();
 </script>
 </body>
