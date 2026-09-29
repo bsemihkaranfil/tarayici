@@ -16660,6 +16660,18 @@ var oldIE = false;
   Engine.browserValid = function () { return true; };
   Engine.autoSelect = function () {};                      // don't pop the phone keyboard by itself
 
+  // the site's other apps (Tarayıcı, PDF viewer) share this origin's storage: on restart remove
+  // only the game's own save instead of localStorage.clear()
+  Engine.deleteSave = function (noReload) {
+    if (typeof Storage != 'undefined' && localStorage) {
+      var prestige = Prestige.get();
+      window.State = {};
+      try { localStorage.removeItem('gameState'); } catch (e) {}
+      Prestige.set(prestige);
+    }
+    if (!noReload) location.reload();
+  };
+
   // "lights off" = dark theme, kept as a body class instead of a separate stylesheet
   Engine.isLightsOff = function () { return $('body').hasClass('mDark'); };
   Engine.turnLightsOff = function () {
