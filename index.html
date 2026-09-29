@@ -134,7 +134,7 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
   'use strict';
 
   /* ---------- Ayarlar ---------- */
-  var VERSION = '2.7';
+  var VERSION = '2.8';
   var ENG = {
     yandex: { n: 'Yandex', q: 'https://yandex.com.tr/search/touch/?text=' },
     google: { n: 'Google', q: 'https://www.google.com/search?q=' },
@@ -507,8 +507,8 @@ footer span{flex:1; white-space:nowrap; overflow:hidden; cursor:pointer}
         return r;
       }, function (e) {
         if (!last || e.k === 'blocked') last = e;
-        // Yedek yol yalnız erişim engelinde ya da okuyucu hatasında denenir (404 gibi gerçek hatalarda değil).
-        if (e.k !== 'blocked' && e.k !== 'fail') return Promise.reject(e);
+        // Yedek yol erişim engelinde, okuyucu/bağlantı hatasında denenir (404 gibi gerçek hatalarda değil).
+        if (e.k !== 'blocked' && e.k !== 'fail' && e.k !== 'net') return Promise.reject(e);
         return step(i + 1);
       });
     }
