@@ -1,0 +1,1575 @@
+/*! A Dark Room - MPL-2.0 - https://github.com/doublespeakgames/adarkroom */
+/* ---- css/main.css ---- */
+/* Fonts */
+body, .tooltip, select.menuBtn {
+	font-family: "Times New Roman", Times, serif;
+	font-size: 16px;
+	font-weight: normal;
+	line-height: normal;
+	letter-spacing: normal;
+}
+
+html {
+	height: 100%;
+}
+
+body {
+	height: 100%;
+	margin: 0;
+}
+
+::selection {
+	background-color: transparent;
+}
+
+::-moz-selection {
+	background-color: transparent;
+}
+
+#description textarea::selection {
+	background-color: gray;
+}
+
+#description textarea::-moz-selection {
+	background-color: gray;
+}
+
+/* Framework stuff */
+
+div.clear {
+	clear: both;
+}
+
+div#wrapper {
+	margin: auto;
+	width: 700px;
+	padding: 20px 0 0 220px;
+	position: relative;
+}
+
+div#saveNotify {
+	position: fixed;
+	top: 10px;
+	right: 20px;
+	background: white;
+	opacity: 0;
+}
+
+div#content {
+	position: relative;
+	overflow: hidden;
+	height: 700px;
+}
+
+div#header {
+	padding-bottom: 20px;
+	height: 20px;
+}
+
+.logo {
+  position: fixed;
+  left: 10px;
+  bottom: 0;
+  z-index: 10;
+}
+
+.logo-icon {
+  height: 40px;
+}
+
+.logo-icon > path {
+  stroke: black;
+}
+
+.menu {
+	position: fixed;
+	right: 10px;
+	bottom: 10px;
+	color: #666;
+	z-index: 10;
+}
+
+.menu span {
+	cursor: pointer;
+	float: right;
+	margin-left: 20px;
+}
+
+.customSelect {
+	height: 20px;
+}
+
+span.customSelectOptions {
+	margin: 0;
+	width: 120px;
+}
+
+.customSelectOptions > ul {
+	max-height: 20px;
+	width: 120px;
+	overflow: hidden;
+	-webkit-transition: max-height 1s;
+	transition: max-height 1s;
+	padding: 0;
+	margin: 0;
+	bottom: 0;
+	position: absolute;
+	right: 0;
+}
+
+.customSelectOptions > ul:hover {
+	max-height: 600px;
+}
+
+.customSelectOptions > ul > li {
+	padding: 0 0 3px 0;
+	list-style-type: none;
+	height: 20px;
+}
+
+.customSelectOptions > ul > li:last-child {
+	padding: 0;
+}
+
+.customSelectOptions > ul > li:hover {
+	text-decoration: underline;
+}
+
+.customSelectOptions > ul > li:first-child:hover {
+	cursor: default;
+	text-decoration: none;
+}
+
+.menu span:hover {
+	text-decoration: underline;
+}
+
+.menu .appStore {
+	font-weight: bold;
+}
+
+div.headerButton {
+	font-size: 17px;
+	cursor: pointer;
+	float: left;
+	border-left: 1px solid black;
+	margin-left: 10px;
+	padding-left: 10px;
+}
+
+div.headerButton:hover {
+	text-decoration: underline;
+}
+
+div.headerButton:first-child {
+	border-left: none;
+	margin-left: 0px;
+	padding-left: 0px;
+}
+
+div.headerButton.selected, div.headerButton.selected:hover {
+	cursor: default;
+	text-decoration: underline;
+}
+
+div#outerSlider {
+	position: absolute;
+}
+
+div#outerSlider > div {
+	position: relative;
+	float: left;
+	width: 700px;
+	height: 700px;
+	overflow: hidden;
+}
+
+div#locationSlider {
+	position: absolute;
+}
+
+div.location {
+	position: relative;
+	float: left;
+	width: 700px;
+}
+
+div.row_key {
+	clear: both;
+	float: left;
+}
+
+div.row_val {
+	float: right;
+}
+
+div.total {
+	font-weight: bold;
+}
+
+/* Notifications */
+
+div#notifications {
+	position: absolute;
+	top: 20px;
+	left: 0px;
+	height: 700px;
+	width: 200px;
+	overflow: hidden;
+}
+
+div#notifications div.notification {
+	margin-bottom: 10px;
+}
+
+div#notifyGradient {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 100%;
+	background-color: white;
+	background: -webkit-linear-gradient(
+		rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%
+	);
+	background: linear-gradient(
+		rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%
+	);
+	filter: alpha(
+		Opacity=0, FinishOpacity=100, Style=1, StartX=0, StartY=0, FinishX=0, FinishY=500
+	);
+}
+
+/* Button */
+
+div.button {
+	position: relative;
+	text-align: center;
+	border: 1px solid black;
+	width: 100px;
+	margin-bottom: 5px;
+	padding: 5px 10px;
+	cursor: pointer;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+div.button:hover {
+	text-decoration: underline;
+}
+
+div.button.disabled, div.button.disabled:hover {
+	cursor: default;
+	border-color: #b2b2b2;
+	color: #b2b2b2;
+	text-decoration: none;
+}
+
+div.button div.cooldown {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	z-index: -1;
+	height: 100%;
+	background-color: #DDDDDD;
+}
+
+/* Up/Down buttons. They're complicated! */
+
+.upBtn, .dnBtn, .upManyBtn, .dnManyBtn {
+	position: absolute;
+	width: 14px;
+	height: 12px;
+	cursor: pointer;
+}
+
+.upBtn, .dnBtn {
+	right: 0px;
+}
+
+.upManyBtn, .dnManyBtn {
+	right: -15px;
+}
+
+.upBtn.disabled, .dnBtn.disabled, .upManyBtn.disabled, .dnManyBtn.disabled {
+	cursor: default;
+}
+
+.upBtn {
+	top: -3px;
+}
+
+.upManyBtn {
+	top: -3px;
+}
+
+.upBtn:after, .upBtn:before, .upManyBtn:after, .upManyBtn:before {
+	position: absolute;
+	border: medium solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	bottom: 2px;
+}
+
+.upBtn:after, .upManyBtn:after {
+	border-color: transparent transparent white;
+}
+
+.upBtn:before, .upManyBtn:before {
+	border-color: transparent transparent black;
+}
+
+.upBtn.disabled:before, .upManyBtn.disabled:before {
+	border-color: transparent transparent #999;
+}
+
+
+.dnBtn {
+	bottom: -3px;
+}
+
+.dnManyBtn {
+	bottom: -3px;
+}
+
+.dnBtn:after, .dnBtn:before, .dnManyBtn:after, .dnManyBtn:before {
+	position: absolute;
+	border: medium solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	top: 2px;
+}
+
+/* Overall size of buttons controlled by this style
+   border-width and margin-left should be the same. */
+.upBtn:before, .dnBtn:before, .upManyBtn:before, .dnManyBtn:before {
+	border-width: 6px;
+	left: 50%;
+	margin-left: -6px;
+}
+
+/* Thickness of up/down button lines controlled by this style.
+   border-width and margin-left should be the same.
+   Thickness = :before.border-width minus :after.border-width */
+.upBtn:after, .dnBtn:after {
+	border-width: 4px;
+	left: 50%;
+	margin-left: -4px;
+}
+
+/* See comment on .upBtn:after, .dnBtn:after */
+.upManyBtn:after, .dnManyBtn:after {
+	border-width: 3px;
+	left: 50%;
+	margin-left: -3px;
+}
+
+.dnBtn:after, .dnManyBtn:after {
+	border-color: white transparent transparent;
+}
+
+.dnBtn:before, .dnManyBtn:before {
+	border-color: black transparent transparent;
+}
+
+.dnBtn.disabled:before, .dnManyBtn.disabled:before {
+	border-color: #999 transparent transparent;
+}
+
+div.button div.tooltip {
+	width: 100px;
+}
+
+/* Tooltip */
+
+div.tooltip {
+	display: none;
+	padding: 2px 5px;
+	border: 1px solid black;
+	position: absolute;
+	box-shadow: -1px 3px 2px #666;
+	background: white;
+	z-index: 999;
+}
+
+.tooltip.bottom {
+	top: 30px;
+}
+
+.tooltip.right {
+	left: 2px;
+}
+
+.tooltip.left {
+	right: 0px;
+}
+
+.tooltip.top {
+	bottom: 20px;
+}
+
+*:hover > div.tooltip {
+	display: block;
+}
+
+div.tooltip:hover {
+	display: none !important;
+}
+
+.disabled:hover > div.tooltip, .button.free:hover > div.tooltip {
+	display: none;
+}
+
+#event .button.disabled:hover > div.tooltip {
+	display: block;
+}
+
+/* Events */
+
+.eventPanel {
+	background: none repeat scroll 0 0 white;
+	border: 2px solid transparent;
+	left: 250px;
+	padding: 20px;
+	position: absolute;
+	top: 90px;
+	width: 335px;
+	z-index: 20;
+}
+
+body.noMask .eventPanel {
+	background-color: black;
+}
+
+.eventPanel:before {
+	background-color:white;
+	opacity: 0.6;
+	content: " ";
+	height: 700px;
+	left: -252px;
+	position: absolute;
+	top: -75px;
+	width: 920px;
+	z-index: -2;
+}
+
+body.noMask .eventPanel:before {
+	opacity: 0;
+}
+
+.eventPanel:after {
+	position: absolute;
+	top: -2px;
+	left: -2px;
+	width: 100%;
+	height: 100%;
+	content: " ";
+	border: 2px solid black;
+	box-shadow: 5px 5px 5px #666666;
+	z-index: -2;
+}
+
+body.noMask .eventPanel:after {
+	border-color: white;
+}
+
+.eventPanel .button {
+	float:left;
+	margin-right: 20px;
+}
+
+body.noMask .eventPanel .button {
+	border-color: white;
+	color: white;
+}
+
+.eventTitle {
+	display: inline-block;
+	font-weight: bold;
+	position: absolute;
+	top: -12px;
+}
+
+body.noMask .eventTitle {
+	color: white;
+}
+
+.eventTitle:after {
+	background-color: white;
+	bottom: 32%;
+	content: " ";
+	height: 5px;
+	left: 0;
+	position: absolute;
+	width: 100%;
+	z-index: -1;
+}
+
+body.noMask .eventTitle:after {
+	background-color: black;
+}
+
+#description {
+	position: relative;
+	min-height: 100px;
+}
+
+#description textarea {
+	width: 100%;
+	height: 225px;
+}
+
+body.noMask #description {
+	color: white;
+}
+
+#description > div {
+	padding-bottom: 20px;
+}
+
+.take-all-button {
+	float: none;
+}
+
+#buttons > .button {
+	margin: 0 5px 5px;
+	margin-right: 15px;
+}
+
+/* Combat! */
+#description div.fighter {
+	padding: 0px;
+	position: absolute;
+	bottom: 15px;
+}
+
+#wanderer {
+	left: 25%;
+}
+
+#enemy {
+	right: 25%;
+}
+
+.hp {
+	position: absolute;
+	top: -15px;
+	margin-left: -50%;
+}
+
+.fighter.shield > .label::before {
+	content: '(';
+	position: absolute;
+	left: -8px;
+}
+
+.fighter.shield > .label::after {
+	content: ')';
+	position: absolute;
+	right: -8px;
+}
+
+.fighter.energised > .label {
+	font-size: 2em;
+	font-style: bold;
+}
+
+.fighter.meditation > .label {
+	font-size: 1.5em;
+	opacity: 0.3;
+}
+
+@keyframes exploding {
+	0% { transform: translate(0, 0); }
+	25% { transform: translate(-10px, 0); }
+	75% { transform: translate(10px, 0); }
+	100% { transform: translate(0, 0); }
+}
+
+.fighter.exploding > .label {
+	animation: exploding 200ms linear infinite;
+}
+
+.fighter.venomous > .label {
+	font-size: 1.5em;
+	font-style: bold;
+}
+
+.fighter.enraged > .label {
+	font-size: 1.5em;
+	font-style: italic;
+}
+
+.fighter.boost > .label {
+	font-style: italic;
+}
+
+#description .bullet {
+	padding: 0px 20px 0px 20px;
+	bottom: 25px;
+	position: absolute;
+	height: 1px;
+	line-height: 1px;
+}
+
+.damageText {
+	position: absolute;
+	bottom: 15px;
+	left: 50%;
+	margin-left: -50%;
+}
+
+#lootButtons {
+	padding-bottom: 0px !important;
+	margin: 20px 0 5px 0;
+	position: relative;
+}
+
+#lootButtons:before {
+	content: attr(data-legend);
+	position: absolute;
+	top: -25px;
+	left: 0px;
+}
+
+#dropMenu {
+	background: none repeat scroll 0 0 white;
+	border: 1px solid black;
+	position: absolute;
+	z-index: 100;
+	padding-top: 5px;
+	text-align: left;
+	box-shadow: -1px 3px 2px #666;
+	cursor: default;
+}
+
+#dropMenu:before {
+	content: attr(data-legend);
+	border-bottom: 1px solid black;
+	display: block;
+	margin-bottom: 5px;
+	padding: 0px 0px 5px 5px;
+}
+
+#dropMenu > div {
+	padding: 0px 5px 5px 5px;
+	cursor: pointer;
+}
+
+#dropMenu > div:hover {
+	text-decoration: underline;
+}
+
+/* ---- css/room.css ---- */
+div#buildBtns {
+	position: absolute;
+	top: 50px;
+	left: 0px;
+}
+
+div#buildBtns:before, div#craftBtns:before, div#buyBtns:before {
+	content: attr(data-legend);
+	position: relative;
+	top: -5px;
+}
+
+div#craftBtns {
+	position: absolute;
+	top: 50px;
+	left: 150px;
+}
+
+div#buyBtns {
+	position: absolute;
+	top: 50px;
+	left: 300px;
+}
+
+div#storesContainer {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+}
+
+div#stores:before, div#weapons:before {
+	position: absolute;
+	background: white;
+	content: attr(data-legend);
+	left: 8px;
+	top: -13px;
+}
+
+div#stores {
+	position: relative;
+	z-index:10;
+	border: 1px solid black;
+	cursor: default;
+	padding: 5px 10px;
+	width: 200px;
+}
+
+div.storeRow {
+	position: relative;
+}
+
+div#weapons {
+	margin-top: 15px;
+	position: relative;
+	right: 0px;
+	border: 1px solid black;
+	cursor: default;
+	padding: 5px 10px;
+	width: 200px;
+}
+
+/* ---- css/outside.css ---- */
+div#village {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	border: 1px solid black;
+	cursor: default;
+	padding: 5px 10px;
+	width: 200px;
+}
+
+div#population {
+	position: absolute;
+	top: -13px;
+	right: 10px;
+	background-color: white;
+}
+
+.noHuts #population {
+	display: none;
+}
+
+div#village:before {
+	position: absolute;
+	background: white;
+	content: attr(data-legend);
+	left: 8px;
+	top: -13px;
+}
+
+div#workers {
+	position:absolute;
+	top: -4px;
+	left: 160px;
+	width: 150px;
+}
+
+.workerRow > .row_val {
+	position: relative;
+	padding-right: 20px;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.workerRow {
+	position: relative;
+	margin: 10px 0px;
+	cursor: default;
+}
+
+.workerRow .tooltip {
+	width: 150px;
+}
+
+div.storeRow div.tooltip {
+	width: 160px;
+}
+
+/* ---- css/path.css ---- */
+#outfitting {
+	position: relative;
+	border: 1px solid black;
+	width: 200px;
+	margin-bottom: 20px;
+	padding: 5px 10px;
+}
+
+div#outfitting:before, div#perks:before {
+	content: attr(data-legend);
+	position: absolute;
+	top: -13px;
+	background-color: white;
+}
+
+div.outfitRow {
+	position: relative;
+	cursor: default;
+	margin: 10px -30px 10px 0px;
+}
+
+div.outfitRow > .row_val {
+	padding-right: 30px;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+div.outfitRow .tooltip {
+	width: 150px;
+}
+
+div#bagspace {
+	background-color: white;
+	position: absolute;
+	top:-13px;
+	right: 10px;
+}
+
+div#perks {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	border: 1px solid black;
+	cursor: default;
+	padding: 5px 10px;
+	width: 200px;
+}
+
+div.perkRow {
+	position: relative;
+}
+
+div.perkRow .row_key {
+	float: none;
+}
+
+#pathScroller {
+	padding-top: 10px;
+	position: relative;
+	top: -10px;
+	max-height: 660px;
+	width: 475px;
+	overflow-y: auto;
+}
+/* ---- css/world.css ---- */
+#worldOuter {
+	position: relative;
+	display: inline-block;
+}
+
+#map {
+	position: relative;
+	font-family: "Courier New", Courier, monospace;
+	border: 1px solid black;
+	overflow: hidden;
+	display: inline-block;
+	line-height: 10px;
+	letter-spacing: 1px;
+	color: #999;
+	cursor: default;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+#map .landmark {
+	position: relative;
+	font-weight: bold;
+	color: black;
+	line-height: 0px; /* Hack to prevent the boldness from increasing the row's line-height. I hope it works in all browsers... */
+}
+
+#bagspace-world {
+	border: 1px solid black;
+	height: 62px;
+	margin-bottom: 5px;
+	margin-top: 13px;
+	overflow: hidden;
+}
+
+#bagspace-world > div {
+	padding: 6px 4px;
+}
+
+#backpackTitle {
+	position: absolute;
+	top: 0px;
+	left: 10px;
+	background-color: white;
+	z-index: 1;
+}
+
+#backpackSpace {
+	position: absolute;
+	top: 0px;
+	right: 10px;
+	background-color: white;
+	z-index: 1;
+}
+
+#healthCounter {
+	position: absolute;
+	top: 0px;
+	left: 80px;
+	background-color: white;
+	z-index: 1;
+}
+
+div.supplyItem {
+	display: inline-block;
+	border: 1px solid #999;
+	float: left;
+	margin: 0px 5px 6px 0px;
+	padding: 0 5px;
+	cursor: default;
+}
+/* ---- css/ship.css ---- */
+div#hullRow {
+	width: 70px;
+}
+
+div#engineRow {
+	width: 70px;
+	margin-bottom: 20px;
+}
+
+/* ---- css/space.css ---- */
+@-ms-keyframes spin {
+	0% { 
+		-ms-transform: rotate(0deg);
+		-webkit-transform: rotate(0deg); 
+		-moz-transform: rotate(0deg);
+		transform:rotate(0deg); 
+	}
+	100% { 
+		-ms-transform: rotate(360deg); 
+		-webkit-transform: rotate(360deg); 
+		-moz-transform: rotate(360deg);
+		transform:rotate(360deg); 
+	}
+}
+
+@-webkit-keyframes spin {
+	0% { 
+		-ms-transform: rotate(0deg);
+		-webkit-transform: rotate(0deg); 
+		-moz-transform: rotate(0deg);
+		transform:rotate(0deg); 
+	}
+	100% { 
+		-ms-transform: rotate(360deg); 
+		-webkit-transform: rotate(360deg); 
+		-moz-transform: rotate(360deg);
+		transform:rotate(360deg); 
+	}
+}
+
+@-moz-keyframes spin {
+	0% { 
+		-ms-transform: rotate(0deg);
+		-webkit-transform: rotate(0deg); 
+		-moz-transform: rotate(0deg);
+		transform:rotate(0deg); 
+	}
+	100% { 
+		-ms-transform: rotate(360deg); 
+		-webkit-transform: rotate(360deg); 
+		-moz-transform: rotate(360deg);
+		transform:rotate(360deg); 
+	}
+}
+
+@keyframes spin {
+	0% { 
+		-ms-transform: rotate(0deg);
+		-webkit-transform: rotate(0deg); 
+		-moz-transform: rotate(0deg);
+		transform:rotate(0deg); 
+	}
+	100% { 
+		-ms-transform: rotate(360deg); 
+		-webkit-transform: rotate(360deg); 
+		-moz-transform: rotate(360deg);
+		transform:rotate(360deg); 
+	}
+}
+
+#spacePanel {
+	float: none !important;
+	position: absolute !important;
+	top: -700px;
+	left: 0px;
+}
+
+#starsContainer {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	overflow: hidden;
+}
+
+#stars, #starsBack {
+	position: absolute;
+	z-index: -1;
+	left: 0px;
+}
+
+#stars > div, #starsBack > div {
+	position: relative;
+	height: 3000px;
+	width: 3000px;
+	color: white;
+}
+
+#starsBack {
+	opacity: 0.5;
+}
+
+.star {
+	position: absolute;
+}
+
+#ship {
+	cursor: default;
+	position: absolute;
+	margin-top: -10px;
+	margin-left: -7.5px;
+}
+
+#theEnd {
+	position: relative;
+	cursor: default;
+	top: 200px;
+	margin-left: -220px;
+	text-align: center;
+	font-size: 24px;
+	font-weight: bold;
+	opacity: 0;
+	color: white;
+}
+
+.asteroid {
+	cursor: default;
+	position: absolute;
+	top: -40px;
+	left: 350px;
+	-webkit-animation: 1s linear 0s normal none infinite spin;
+	-moz-animation: 1s linear 0s normal none infinite spin;
+	-ms-animation: 1s linear 0s normal none infinite spin;
+	animation: 1s linear 0s normal none infinite spin;
+	font-size: 32px;
+}
+
+#hullRemaining {
+	width: 70px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
+.centerCont {
+	padding-top:10%;
+}
+
+.outroContainer {
+	padding-top:10%;
+	width: 800px;
+	margin: 0 auto;
+}
+
+.outro {
+	font-size: 1.5rem;
+	color: #FFF;
+	opacity: 0;
+	margin-bottom: 40px;
+}
+
+.endGame {
+	font-size:48px;
+	color:#FFFFFF;
+	opacity:0;
+	position:relative;
+}
+
+.endGameOption {
+	font-size: 32px;
+	cursor: pointer;
+}
+
+.endGameOption:hover {
+	text-decoration: underline;
+}
+
+#wait-btn {
+	border-color: #fff;
+	color: #fff;
+	margin: 0 auto;
+	opacity: 0;
+}
+
+/* ---- css/fabricator.css ---- */
+div#fabricateButtons {
+  position: relative;
+  top: 5px;
+	left: 0;
+}
+
+div#fabricateButtons::before {
+	content: attr(data-legend);
+	position: relative;
+	top: -5px;
+}
+
+div#blueprints::before {
+  content: attr(data-legend);
+	position: absolute;
+	top: -13px;
+	background-color: white;
+}
+
+div#blueprints {
+	position: absolute;
+	top: 0px;
+	right: 237px;
+	border: 1px solid black;
+	cursor: default;
+	padding: 5px 10px;
+	width: 200px;
+}
+
+div.blueprintRow {
+	position: relative;
+}
+
+div.blueprintRow .row_key {
+	float: none;
+}
+
+/* ---- lang/tr/main.css ---- */
+.button{width: 100px !important;}
+#outsidePanel .button{width: 115px !important;}
+.eventPanel .button {width: 122px !important;}
+/* ---- css/dark.css (scoped) ---- */
+body.mDark {
+	background-color: #272823;
+	color: #EEE;
+}
+body.mDark div.headerButton {
+	border-left: 1px solid #EEE;
+}
+body.mDark div#notifyGradient {
+	background-color: #272823;
+	background: -webkit-linear-gradient( rgba(39, 40, 35, 0) 0%, rgba(39, 40, 35, 1) 100% );
+	background: linear-gradient( rgba(39, 40, 35, 0) 0%, rgba(39, 40, 35, 1) 100% );
+	filter: alpha( Opacity=0, FinishOpacity=100, Style=1, StartX=0, StartY=0, FinishX=0, FinishY=500 );
+}
+body.mDark div#saveNotify {
+	background: #272823;
+}
+body.mDark .eventPanel:before {
+	background-color: #272823;
+}
+body.mDark .eventTitle:after {
+	background-color: #272823;
+}
+body.mDark div.tooltip {
+	background-color: #171813;
+	border: 1px solid black;
+	box-shadow: -1px 3px 2px #111;
+}
+body.mDark div#population {
+	background-color: #272823;
+}
+body.mDark div#village:before {
+	background: #272823;
+}
+body.mDark div#village {
+	border: 1px solid #EEE;
+}
+body.mDark div#stores:before {
+	background: #272823;
+}
+body.mDark div#stores {
+	border: 1px solid #EEE;
+}
+body.mDark div#blueprints:before {
+	background: #272823;
+}
+body.mDark div#blueprints {
+	border: 1px solid #EEE;
+}
+body.mDark div#weapons:before {
+	background: #272823;
+}
+body.mDark div#weapons {
+	border: 1px solid #EEE;
+}
+body.mDark div#bagspace {
+	background-color: #272823;
+}
+body.mDark div#outfitting:before {
+	background: #272823;
+}
+body.mDark div#perks {
+	border: 1px solid #EEE;
+}
+body.mDark div#perks:before {
+	background-color: #272823;
+}
+body.mDark div#outfitting {
+	border: 1px solid #EEE;
+}
+body.mDark #bagspace-world {
+	border: 1px solid #EEE;
+}
+body.mDark div.supplyItem {
+	border: 1px solid #EEE;
+}
+body.mDark #backpackTitle {
+	background-color: #272823;
+}
+body.mDark #backpackSpace {
+	background-color: #272823;
+}
+body.mDark #healthCounter {
+	background-color: #272823;
+}
+body.mDark #map {
+	border: 1px solid #EEE;
+}
+body.mDark #map .landmark {
+	color: #EEE;
+}
+body.mDark #dropMenu {
+	background: none repeat scroll 0 0 #272823;
+	box-shadow: -1px 3px 2px #111;
+}
+body.mDark div.button {
+	border: 1px solid #EEE;
+}
+body.mDark div.button.disabled,
+body.mDark div.button.disabled:hover {
+	border-color: #444;
+	color: #444;
+}
+body.mDark .upBtn:after,
+body.mDark .upManyBtn:after {
+	border-color: transparent transparent #272823;
+}
+body.mDark .upBtn:before,
+body.mDark .upManyBtn:before {
+	border-color: transparent transparent #EEE;
+}
+body.mDark .upBtn.disabled:before,
+body.mDark .upManyBtn.disabled:before {
+	border-color: transparent transparent #555;
+}
+body.mDark .dnBtn:after,
+body.mDark .dnManyBtn:after {
+	border-color: #272823 transparent transparent;
+}
+body.mDark .dnBtn:before,
+body.mDark .dnManyBtn:before {
+	border-color: #EEE transparent transparent;
+}
+body.mDark .dnBtn.disabled:before,
+body.mDark .dnManyBtn.disabled:before {
+	border-color: #555 transparent transparent;
+}
+body.mDark.noMask .eventTitle {
+	background-color: #EEE;
+	color: #272823;
+}
+body.mDark.noMask .eventTitle:after {
+	background-color: #EEE;
+}
+body.mDark.noMask .eventPanel {
+	background-color: #EEE;
+}
+body.mDark.noMask #description {
+	color: #272823;
+}
+body.mDark.noMask #buttons > .button {
+	border: 1px solid #272823;
+	color: #272823;
+}
+body.mDark #stars > div,
+body.mDark #starsBack > div {
+	color: black;
+}
+body.mDark .endGame,
+body.mDark .outro {
+	color:#272823;
+}
+body.mDark #wait-btn {
+	border-color: black;
+	color: black;
+}
+body.mDark #theEnd {
+	color: #272823;
+}
+body.mDark .logo-icon > path {
+  stroke: white;
+}
+/* ---- mobile.css ---- */
+/* ==========================================================================
+   A Dark Room — Cloud Phone / 120x160 keypad layout
+   Overrides the desktop layout of the original game (MPL-2.0).
+   ========================================================================== */
+
+html, body { height: 100%; overflow: hidden; }
+body, .tooltip, select.menuBtn {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 11px;
+  line-height: 1.2;
+}
+body { margin: 0; background: #fff; color: #000; -webkit-text-size-adjust: none; }
+
+/* desktop-only chrome */
+.logo, .menu, #header, #saveNotify { display: none !important; }
+/* the original notification column is kept off-screen; the newest line is shown in #mNote */
+div#notifications { position: fixed !important; left: -3000px !important; top: 0 !important; visibility: hidden !important; }
+
+/* ---------- fixed bars ---------- */
+#mHead {
+  position: fixed; top: 0; left: 0; right: 0; height: 13px; line-height: 13px;
+  padding: 0 2px; font-size: 10px; font-weight: bold; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border-bottom: 1px solid #000; background: #fff; z-index: 50;
+}
+#mNote {
+  position: fixed; top: 14px; left: 0; right: 0; height: 20px;
+  padding: 0 2px; font-size: 9px; line-height: 10px; overflow: hidden;
+  color: #666; border-bottom: 1px solid #bbb; background: #fff; z-index: 50;
+}
+#mNote.fresh { color: #000; }
+#mSoft {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 11px; line-height: 11px;
+  font-size: 9px; border-top: 1px solid #000; background: #fff; z-index: 60;
+}
+#mSoft span { position: absolute; top: 0; white-space: nowrap; }
+#mSoft .l { left: 2px; }
+#mSoft .c { left: 30%; right: 30%; text-align: center; font-weight: bold; }
+#mSoft .r { right: 2px; }
+#mToast {
+  position: fixed; left: 4px; right: 4px; bottom: 15px; padding: 2px 3px;
+  background: #000; color: #fff; font-size: 9px; line-height: 10px; text-align: center;
+  z-index: 90; display: none;
+}
+
+/* ---------- main scroll area ---------- */
+div#wrapper {
+  position: fixed !important; top: 35px; bottom: 12px; left: 0; right: 0;
+  width: auto !important; margin: 0 !important; padding: 0 2px !important;
+  overflow-x: hidden; overflow-y: auto;
+}
+div#content { position: static !important; height: auto !important; overflow: visible !important; }
+div#outerSlider, div#locationSlider {
+  position: static !important; left: auto !important; top: auto !important; width: auto !important;
+}
+div#outerSlider > div {
+  display: none !important; float: none !important;
+  width: auto !important; height: auto !important; overflow: visible !important;
+}
+div#outerSlider > div.mActive { display: block !important; }
+div#locationSlider > div.location { display: none !important; float: none !important; width: auto !important; }
+div#locationSlider > div.location.mActive { display: block !important; }
+div.location { padding-top: 2px; }
+
+/* ---------- buttons ---------- */
+body div.button, body #outsidePanel div.button, body .eventPanel div.button, body #event div.button {
+  width: auto !important; float: none !important; display: block;
+  margin: 0 0 3px 0 !important; padding: 2px 3px; border: 1px solid #000;
+  font-size: 10px; line-height: 12px; text-align: left;
+}
+body div.button.disabled { border-color: #b2b2b2; color: #999; }
+body div.button.kf { border-width: 2px; padding: 1px 2px; font-weight: bold; }
+body div.button.disabled.kf { border-color: #777; color: #777; }
+div.button div.cooldown { z-index: -1; }
+
+/* section legends (build: craft: buy: fabricate:) */
+div#buildBtns, div#craftBtns, div#buyBtns, div#fabricateButtons {
+  position: static !important; top: auto !important; left: auto !important; margin-top: 3px;
+}
+div#buildBtns:before, div#craftBtns:before, div#buyBtns:before, div#fabricateButtons::before {
+  display: block; position: static; top: 0; margin: 1px 0; font-size: 9px; color: #555;
+}
+
+/* cost / income tooltips: shown inline under the focused item */
+div.tooltip { display: none !important; }
+.kf > div.tooltip {
+  display: block !important; position: static !important; width: auto !important;
+  margin: 2px 0 0; padding: 1px 0 0 !important; border: 0 !important; border-top: 1px dotted #999 !important;
+  box-shadow: none !important; background: transparent !important;
+  font-size: 9px; line-height: 10px; font-weight: normal; text-align: left;
+}
+.kf > div.tooltip:after { content: ""; display: block; clear: both; }
+
+/* ---------- boxes: stores, weapons, village, perks, blueprints, outfitting ---------- */
+div#storesContainer {
+  position: static !important; top: auto !important; right: auto !important; margin: 4px 0;
+}
+div#stores, div#weapons, div#village, div#perks, div#blueprints, div#outfitting {
+  position: relative !important; top: auto !important; right: auto !important; left: auto !important;
+  width: auto !important; margin: 9px 0 3px !important; padding: 3px 3px 2px !important;
+  border: 1px solid #000; font-size: 10px;
+}
+div#stores:before, div#weapons:before, div#village:before, div#perks:before,
+div#blueprints::before, div#outfitting:before {
+  position: absolute; top: -7px; left: 3px; padding: 0 1px;
+  font-size: 9px; line-height: 10px; background: #fff;
+}
+div#population, div#bagspace {
+  position: absolute !important; top: -7px !important; right: 3px !important;
+  padding: 0 1px; font-size: 9px; line-height: 10px; background: #fff;
+}
+div#weapons[style*="opacity: 0;"] { display: none; }
+div.storeRow, div.perkRow, div.blueprintRow { line-height: 11px; }
+div.perkRow .row_val, div.blueprintRow .row_val { font-size: 9px; color: #555; }
+
+/* outside: buttons first, then workers, then the village box */
+div#locationSlider > div#outsidePanel.mActive { display: flex !important; flex-direction: column; }
+#outsidePanel > #workers { order: 5; }
+#outsidePanel > #village { order: 10; }
+div#workers { position: static !important; top: auto !important; left: auto !important; width: auto !important; margin: 3px 0 0; }
+
+/* path: outfitting first, perks after */
+div#locationSlider > div#pathPanel.mActive { display: flex !important; flex-direction: column; }
+#pathPanel > #perks { order: 10; }
+#pathScroller { position: static !important; top: auto !important; width: auto !important; max-height: none !important; overflow: visible !important; padding-top: 2px !important; }
+
+/* counters (workers, outfitting) */
+.workerRow, div.outfitRow {
+  position: relative; margin: 0 0 2px 0 !important; padding: 1px 2px;
+  border: 1px solid transparent; line-height: 12px; cursor: default;
+}
+.workerRow > .row_val, div.outfitRow > .row_val { padding-right: 0 !important; }
+.upBtn, .dnBtn, .upManyBtn, .dnManyBtn { display: none !important; }
+.workerRow.kf, div.outfitRow.kf { border: 2px solid #000; padding: 0 1px; font-weight: bold; }
+.mEdit > .row_val:before { content: "\25C2 "; }
+.mEdit > .row_val:after { content: " \25B8"; }
+.workerRow.mEdit, div.outfitRow.mEdit { background: #000; color: #fff; }
+body.mDark .workerRow.mEdit, body.mDark div.outfitRow.mEdit { background: #EEE; color: #000; }
+
+/* ship */
+div#hullRow, div#engineRow { width: auto !important; margin-bottom: 2px !important; }
+
+/* ---------- events ---------- */
+.eventPanel, div#wrapper .eventPanel {
+  position: fixed !important; top: 35px !important; bottom: 12px !important; left: 0 !important; right: 0 !important;
+  width: auto !important; margin: 0 !important; padding: 2px 3px 4px !important;
+  overflow-x: hidden; overflow-y: auto; background: #fff; border: 0 !important; z-index: 40 !important;
+}
+.eventPanel:before, .eventPanel:after { display: none !important; }
+.eventTitle {
+  position: static !important; display: block !important; top: auto !important;
+  margin-bottom: 2px; font-size: 10px; border-bottom: 1px solid #000;
+}
+.eventTitle:after { display: none !important; }
+#description { position: relative; min-height: 0 !important; font-size: 10px; line-height: 11px; }
+#description > div { padding-bottom: 4px !important; }
+#description textarea { width: 100% !important; height: 50px !important; font-size: 9px; box-sizing: border-box; }
+#buttons { margin-top: 2px; }
+#buttons > .button { margin: 0 0 3px 0 !important; }
+#exitButtons, #attackButtons, #healButtons { float: none !important; }
+#fight { position: relative; height: 32px; }
+#description div.fighter { bottom: 1px !important; font-size: 11px; }
+#description .hp { top: -11px !important; font-size: 9px; white-space: nowrap; }
+#description .bullet { bottom: 8px !important; }
+.damageText { font-size: 9px; white-space: nowrap; }
+#lootButtons { margin: 13px 0 3px !important; }
+#lootButtons:before { top: -11px !important; font-size: 9px; }
+#dropMenu {
+  position: static !important; margin: 2px 0 0; padding: 1px 0 0 !important;
+  border: 1px solid #000; box-shadow: none !important; font-weight: normal; font-size: 10px;
+}
+#dropMenu:before { margin-bottom: 1px !important; padding: 0 2px 1px !important; font-size: 9px; }
+#dropMenu > div { padding: 1px 3px !important; border: 1px solid transparent; }
+#dropMenu > div.kf { border: 2px solid #000; padding: 0 2px !important; font-weight: bold; }
+
+/* ---------- world ---------- */
+#worldOuter { display: block !important; }
+#bagspace-world, #backpackTitle, #backpackSpace, #healthCounter { display: none !important; }
+#mapWrap { position: relative; overflow: hidden; height: 110px; }
+#map {
+  position: absolute !important; border: 0 !important;
+  font-size: 12px !important; line-height: 8px !important; letter-spacing: 0 !important;
+}
+#map .tooltip { display: none !important; }
+
+/* ---------- space ---------- */
+body[data-mod="Space"] div#outerSlider { position: relative !important; overflow: hidden !important; }
+div#outerSlider > #spacePanel.mActive {
+  position: absolute !important; top: 0 !important; left: 0 !important;
+  width: 700px !important; height: 700px !important; overflow: hidden !important;
+  transform-origin: 0 0;
+}
+#spacePanel #hullRemaining { display: none; }
+#ship { transform: scale(3); }
+.asteroid { animation-name: mspin !important; }
+@keyframes mspin {
+  0% { transform: rotate(0deg) scale(2); }
+  100% { transform: rotate(360deg) scale(2); }
+}
+
+/* ---------- ending ---------- */
+.outroContainer, .centerCont {
+  position: fixed !important; top: 14px; bottom: 12px; left: 0; right: 0;
+  width: auto !important; margin: 0 !important; padding: 4px 3px !important;
+  overflow-y: auto; z-index: 45; text-align: center;
+}
+.outro { font-size: 10px !important; margin-bottom: 6px !important; }
+.endGame, .endGameOption { font-size: 11px !important; }
+.endGameOption.kf { text-decoration: underline; font-weight: bold; }
+.centerCont > span:nth-of-type(n+4) { display: none !important; }
+
+/* ---------- overlays: menu, log, help, bag ---------- */
+#mOver {
+  position: fixed; top: 14px; bottom: 12px; left: 0; right: 0; padding: 2px 3px;
+  overflow-x: hidden; overflow-y: auto; background: #fff; font-size: 10px; line-height: 12px;
+  z-index: 70; display: none;
+}
+#mOver.on { display: block; }
+#mOver h3 { margin: 0 0 3px; font-size: 10px; border-bottom: 1px solid #000; }
+#mOver .mi { margin-bottom: 2px; padding: 1px 3px; border: 1px solid #000; }
+#mOver .mi.kf { border-width: 2px; padding: 0 2px; font-weight: bold; }
+#mOver .ln { padding: 1px 0; border-bottom: 1px dotted #bbb; font-size: 9px; line-height: 10px; }
+#mOver .ln.b { font-weight: bold; }
+
+/* ---------- dark theme ("lights off") and space ---------- */
+body.mDark, body.mDark #mHead, body.mDark #mNote, body.mDark #mSoft, body.mDark #mOver,
+body.mDark .eventPanel, body.mDark div#stores:before, body.mDark div#weapons:before,
+body.mDark div#village:before, body.mDark div#perks:before, body.mDark div#blueprints::before,
+body.mDark div#outfitting:before, body.mDark div#population, body.mDark div#bagspace {
+  background: #272823; color: #EEE;
+}
+body.mDark #mHead, body.mDark #mSoft, body.mDark #mOver h3, body.mDark .eventTitle,
+body.mDark div#stores, body.mDark div#weapons, body.mDark div#village, body.mDark div#perks,
+body.mDark div#blueprints, body.mDark div#outfitting, body.mDark #dropMenu,
+body.mDark div.button, body.mDark #mOver .mi { border-color: #EEE; }
+body.mDark #mNote { color: #aaa; border-color: #555; }
+body.mDark #mNote.fresh { color: #fff; }
+body.mDark div.button.disabled { border-color: #666; color: #777; }
+body.mDark div.button.disabled.kf { border-color: #999; color: #999; }
+body.mDark .workerRow.kf, body.mDark div.outfitRow.kf, body.mDark #dropMenu > div.kf { border-color: #EEE; }
+body.mDark div.button div.cooldown { background-color: #444; }
+body.mDark #map { color: #777; }
+body.mDark #map .landmark { color: #EEE; }
+body.mDark #mToast { background: #EEE; color: #000; }
+
+body.mDark div#wrapper .eventPanel, body.mDark .eventPanel { background: #272823 !important; color: #EEE; }
+body.noMask #mHead, body.noMask #mNote, body.noMask #mSoft { background: #000; color: #fff; border-color: #fff; }
+body.noMask div#wrapper .eventPanel, body.noMask .eventPanel { background: #000 !important; color: #fff; }
