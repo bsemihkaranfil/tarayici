@@ -1,0 +1,3 @@
+CloudPhone PDF Viewer — https://github.com/tasmon/PDF-Viewer (GPL-3.0, see LICENSE)
+Modified 2026-09-29 for 120x160 screens (Nokia 105 4G): viewport follows the device,
+fluid layout, compact bars below 160px width, pan limits use the real viewer size.
